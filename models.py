@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 class SpatialTransformerDimK(nn.Module):
     def __init__(self, k=64):
@@ -40,7 +39,7 @@ class SpatialTransformerDimK(nn.Module):
         out = self.fc_3(out)
 
         #TODO: change numpy functions to torch below
-        I = Variable(torch.from_numpy(np.eye(self.k).flatten().astype(np.float32))).view(1,self.k*self.k).repeat(batch_size,1)
+        I = torch.from_numpy(np.eye(self.k).flatten().astype(np.float32)).view(1,self.k*self.k).repeat(batch_size,1)
         if out.is_cuda:
             I = I.cuda()
         out = out + I
@@ -128,19 +127,29 @@ class PointNetSegmenter(nn.Module):
         return out
 
 if __name__ == '__main__':
-    sim_data = Variable(torch.rand(32, 3, 2500))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Create sample data
+    sim_data = torch.rand(32, 3, 2500)
+    sim_data = sim_data.to(device)
 
     # PointNet features
     point_feat = PointNetBase()
-    out = point_feat(sim_data)
-    print('point feature output size:', out.size())
+    point_feat.to(device)
 
     # Segmenter without feature transform
-    segmenter = PointNetSegmenter(3, include_feature_transform=False)
-    out = segmenter(sim_data)
-    print('segmenter output size (without feature transform):', out.size())
+    segmenter_no_feature = PointNetSegmenter(3, include_feature_transform=False)
+    segmenter_no_feature.to(device)
 
-        # Segmenter without feature transform
-    segmenter = PointNetSegmenter(3, include_feature_transform=True)
-    out = segmenter(sim_data)
+    # Segmenter with feature transform
+    segmenter_feature = PointNetSegmenter(3, include_feature_transform=True)
+    segmenter_feature.to(device)
+
+    # Running data through models
+    print('Running sample data through models')
+    out = point_feat(sim_data)
+    print('point feature output size:', out.size())
+    out = segmenter_no_feature(sim_data)
+    print('segmenter output size (without feature transform):', out.size())
+    out = segmenter_feature(sim_data)
     print('segmenter output size (with feature transform):', out.size())
