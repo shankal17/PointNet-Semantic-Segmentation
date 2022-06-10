@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# TODO: change instance norms back to BatchNorm1d
+
 class SpatialTransformerDimK(nn.Module):
     def __init__(self, k=64):
         super(SpatialTransformerDimK, self).__init__()
@@ -18,11 +20,11 @@ class SpatialTransformerDimK(nn.Module):
         self.fc_3 = nn.Linear(256, k**2)
 
         # Batch norms
-        self.bn_1 = nn.BatchNorm1d(64)
-        self.bn_2 = nn.BatchNorm1d(128)
-        self.bn_3 = nn.BatchNorm1d(1024)
-        self.bn_4 = nn.BatchNorm1d(512)
-        self.bn_5 = nn.BatchNorm1d(256)
+        self.bn_1 = nn.InstanceNorm1d(64)
+        self.bn_2 = nn.InstanceNorm1d(128)
+        self.bn_3 = nn.InstanceNorm1d(1024)
+        self.bn_4 = nn.InstanceNorm1d(512)
+        self.bn_5 = nn.InstanceNorm1d(256)
 
         # Other
         self.k = k
@@ -63,9 +65,9 @@ class PointNetBase(nn.Module):
         self.conv_3 = nn.Conv1d(128, 1024, 1)
 
         # Batch norms
-        self.bn_1 = nn.BatchNorm1d(64)
-        self.bn_2 = nn.BatchNorm1d(128)
-        self.bn_3 = nn.BatchNorm1d(1024)
+        self.bn_1 = nn.InstanceNorm1d(64)
+        self.bn_2 = nn.InstanceNorm1d(128)
+        self.bn_3 = nn.InstanceNorm1d(1024)
 
     def forward(self, x):
         num_pts = x.size()[2]
@@ -108,9 +110,9 @@ class PointNetSegmenter(nn.Module):
         self.conv_4 = nn.Conv1d(128, num_classes, 1)
 
         # Batch norms
-        self.bn_1 = nn.BatchNorm1d(512)
-        self.bn_2 = nn.BatchNorm1d(256)
-        self.bn_3 = nn.BatchNorm1d(128)
+        self.bn_1 = nn.InstanceNorm1d(512)
+        self.bn_2 = nn.InstanceNorm1d(256)
+        self.bn_3 = nn.InstanceNorm1d(128)
 
     def forward(self, x):
         batch_size = x.size()[0]
@@ -132,6 +134,7 @@ if __name__ == '__main__':
     # Create sample data
     sim_data = torch.rand(32, 3, 2500)
     sim_data = sim_data.to(device)
+    print('input shape:', sim_data.shape)
 
     # PointNet features
     point_feat = PointNetBase()
