@@ -11,5 +11,5 @@ if __name__ == '__main__':
     sphere_pts = label_points(sphere_pts, 1)
 
     pt_cloud = np.concatenate((cube_pts, sphere_pts), axis=1)
-    np.save('data/sample_point_cloud_1.npy', pt_cloud)
+    np.save('data/sample_point_cloud_2.npy', pt_cloud)
 
