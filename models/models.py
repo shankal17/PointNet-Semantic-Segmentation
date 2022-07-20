@@ -41,7 +41,7 @@ class SpatialTransformerDimK(nn.Module):
         out = self.fc_3(out)
 
         #TODO: change numpy functions to torch below
-        I = torch.from_numpy(np.eye(self.k).flatten().astype(np.float32)).view(1,self.k*self.k).repeat(batch_size,1)
+        I = torch.from_numpy(np.eye(self.k).flatten().astype(np.float32)).view(1, self.k**2).repeat(batch_size, 1)
         if out.is_cuda:
             I = I.cuda()
         out = out + I
@@ -97,7 +97,7 @@ class PointNetBase(nn.Module):
         return torch.cat([out, point_features], 1)
 
 class PointNetSegmenter(nn.Module):
-    def __init__(self, num_classes, include_feature_transform=False):
+    def __init__(self, num_classes, include_feature_transform=False, mode='train'):
         super(PointNetSegmenter, self).__init__()
         self.num_classes = num_classes
         self.include_feature_transform = include_feature_transform
@@ -114,17 +114,18 @@ class PointNetSegmenter(nn.Module):
         self.bn_2 = nn.BatchNorm1d(256)
         self.bn_3 = nn.BatchNorm1d(128)
 
+        assert mode in {'train', 'inference'}
+        self.mode = mode
+    
     def forward(self, x):
-        batch_size = x.size()[0]
-        num_pts = x.size()[2]
+        # batch_size = x.size()[0]
+        # num_pts = x.size()[2]
         out = self.feature_extractor(x)
         out = F.relu(self.bn_1(self.conv_1(out)))
         out = F.relu(self.bn_2(self.conv_2(out)))
         out = F.relu(self.bn_3(self.conv_3(out)))
         out = self.conv_4(out)
         out = out.transpose(2, 1).contiguous()
-        out = F.log_softmax(out.view(-1, self.num_classes), dim=-1)
-        out  = out.view(batch_size, num_pts, self.num_classes)
 
         return out
 
@@ -149,10 +150,10 @@ if __name__ == '__main__':
     segmenter_feature.to(device)
 
     # Running data through models
-    print('Running sample data through models')
+    print('[STATUS] Running sample data through models...')
     out = point_feat(sim_data)
-    print('point feature output size:', out.size())
+    print('[RESULT] point feature output size:', out.size())
     out = segmenter_no_feature(sim_data)
-    print('segmenter output size (without feature transform):', out.size())
+    print('[RESULT] segmenter output size (without feature transform):', out.size())
     out = segmenter_feature(sim_data)
-    print('segmenter output size (with feature transform):', out.size())
+    print('[RESULT] segmenter output size (with feature transform):', out.size())
