@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from natsort import natsorted
-from torch import from_numpy
+from torch import from_numpy, int64
 from torch.utils.data import Dataset
 
 class PointCloudDataset(Dataset):
@@ -16,13 +16,19 @@ class PointCloudDataset(Dataset):
         cloud_loc = os.path.join(self.data_folder, self.sorted_clouds[idx])
         cloud = np.load(cloud_loc)
         cloud = from_numpy(cloud)
-        pts = cloud[0:3, :]
-        labels = cloud[-1, :]
+        pts = cloud[0:3, :].float()
+        labels = cloud[-1, :].type(int64)
 
         return pts, labels
 
     def __len__(self):
         return len(self.sorted_clouds)
+
+def my_collate(batch):
+    data = [item[0].float() for item in batch]
+    target = [item[1].type(int64) for item in batch]
+
+    return [data, target]
 
 if __name__ == '__main__':
     ds = PointCloudDataset('data/', 'train')

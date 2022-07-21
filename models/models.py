@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# TODO: change instance norms back to BatchNorm1d
+# TODO: change instance norms back to batch norms
 
 class SpatialTransformerDimK(nn.Module):
     def __init__(self, k=64):

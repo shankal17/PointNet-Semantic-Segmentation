@@ -8,7 +8,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 sys.path.append('models')
 sys.path.append('data_gen')
-from dataset import PointCloudDataset
+from dataset import PointCloudDataset, my_collate
 from models import PointNetSegmenter
 
 #TODO: Make custom collate function for batches with point clouds of different sizes https://discuss.pytorch.org/t/how-to-create-a-dataloader-with-variable-size-input/8278/3
@@ -17,10 +17,9 @@ num_classes = 3
 # Load single mini-batch
 data_dir = 'data/'
 train_data = PointCloudDataset(data_dir, 'train')
-train_loader = DataLoader(train_data, batch_size=1, shuffle=True)
+# train_loader = DataLoader(train_data, batch_size=2, shuffle=True, collate_fn=my_collate)
+train_loader = DataLoader(train_data, batch_size=2, shuffle=True)
 inputs, labels = next(iter(train_loader))
-inputs, labels = inputs.float(), labels.type(torch.int64)
-inputs, labels = inputs.float(), labels
 labels = nn.functional.one_hot(labels, num_classes=num_classes).float()
 
 # Initialize model
@@ -31,12 +30,14 @@ optimizer = optim.Adam(segmenter.parameters(), lr=0.003)
 # Move things to device
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 inputs, labels = inputs.to(device), labels.to(device)
+# inputs = [input.to(device) for input in inputs]
+# labels = [label.to(device) for label in labels]
 segmenter.to(device)
-print('inputs:\n', inputs.size())
+# print('inputs:\n', inputs.size())
 
 # Overtrain
 losses = []
-for epoch in tqdm(range(5000)):
+for epoch in tqdm(range(1000)):
     optimizer.zero_grad()
     logits = segmenter(inputs)
     loss = criterion(logits, labels)
