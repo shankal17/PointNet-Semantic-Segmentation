@@ -1,18 +1,9 @@
 import torch
 import torch.nn as nn
 
-batch_size = 5
-nb_classes = 2
-in_features = 10
+m = nn.BatchNorm1d(6)
+input_tensor = torch.randn(4, 6)
+print(f"input:\n {input_tensor}")
+output = m(input_tensor)
+print(f"output:\n {output}")
 
-model = nn.Linear(in_features, nb_classes)
-criterion = nn.CrossEntropyLoss()
-
-x = torch.randn(batch_size, in_features)
-target = torch.empty(batch_size, dtype=torch.long).random_(nb_classes)
-print(target)
-
-output = model(x)
-print(output)
-loss = criterion(output, target)
-loss.backward()

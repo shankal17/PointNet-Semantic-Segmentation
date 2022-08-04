@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import torch
 from natsort import natsorted
 from torch import from_numpy, int64
 from torch.utils.data import Dataset
@@ -27,6 +28,7 @@ class PointCloudDataset(Dataset):
 def my_collate(batch):
     data = [item[0].float() for item in batch]
     target = [item[1].type(int64) for item in batch]
+    target = torch.LongTensor(target)
 
     return [data, target]
 
