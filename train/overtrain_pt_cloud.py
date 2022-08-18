@@ -18,7 +18,7 @@ num_classes = 3
 data_dir = 'data/'
 train_data = PointCloudDataset(data_dir, 'train')
 # train_loader = DataLoader(train_data, batch_size=2, shuffle=True, collate_fn=my_collate)
-train_loader = DataLoader(train_data, batch_size=5, shuffle=True)
+train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 inputs, labels = next(iter(train_loader))
 labels = nn.functional.one_hot(labels, num_classes=num_classes).float()
 
@@ -37,7 +37,7 @@ segmenter.to(device)
 
 # Overtrain
 losses = []
-for epoch in tqdm(range(75)):
+for epoch in tqdm(range(50)):
     optimizer.zero_grad()
     logits = segmenter(inputs)
     loss = criterion(logits, labels)
