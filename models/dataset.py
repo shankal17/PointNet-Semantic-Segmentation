@@ -4,6 +4,7 @@ import torch
 from natsort import natsorted
 from torch import from_numpy, int64
 from torch.utils.data import Dataset
+import matplotlib.pyplot as plt
 
 class PointCloudDataset(Dataset):
     def __init__(self, data_folder, split_type):
@@ -16,9 +17,15 @@ class PointCloudDataset(Dataset):
     def __getitem__(self, idx):
         cloud_loc = os.path.join(self.data_folder, self.sorted_clouds[idx])
         cloud = np.load(cloud_loc)
-        cloud = from_numpy(cloud)
-        pts = cloud[0:3, :].float()
-        labels = cloud[-1, :].type(int64)
+        pts = cloud[0:3, :]
+        column_means = np.mean(pts.T, axis=0).reshape((1, 3))
+        mean_centered_points = (pts.T - column_means).T
+        dist = np.max(np.abs(mean_centered_points))
+        pts = mean_centered_points / (2*dist)
+
+        labels = cloud[-1, :]
+        pts = from_numpy(pts).float()
+        labels = from_numpy(labels).type(int64)
 
         return pts, labels
 

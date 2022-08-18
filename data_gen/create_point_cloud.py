@@ -3,7 +3,7 @@ from unit_shape_gen import *
 
 if __name__ == '__main__':
     cube_pts = gen_unit_cube(1000)
-    cube_transform = build_transformation_matrix(0, 0, 0, 2, 1, -1)
+    cube_transform = build_transformation_matrix(0, 0, 0, 3, 1, -1)
     cube_label = np.zeros(cube_pts.shape[1])
     cube_pts = cube_transform @ cube_pts
     cube_pts = label_points(cube_pts, 0)
